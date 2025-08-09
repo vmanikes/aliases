@@ -24,12 +24,52 @@ print_error() {
     echo -e "${RED}❌ $1${NC}"
 }
 
+# Function to show help
+show_help() {
+    echo "Ship - Create new branch and first commit"
+    echo ""
+    echo "Usage: ship {conventional commit type} {ticket} {message}"
+    echo ""
+    echo "Arguments:"
+    echo "  type     Conventional commit type"
+    echo "  ticket   Ticket/issue number (e.g., ENG-1234)"
+    echo "  message  Commit message"
+    echo ""
+    echo "Conventional commit types:"
+    echo "  feat     - A new feature"
+    echo "  fix      - A bug fix"
+    echo "  docs     - Documentation changes"
+    echo "  style    - Code style changes"
+    echo "  refactor - Code refactoring"
+    echo "  test     - Adding or updating tests"
+    echo "  chore    - Maintenance tasks"
+    echo "  perf     - Performance improvements"
+    echo "  ci       - CI/CD changes"
+    echo "  build    - Build system changes"
+    echo ""
+    echo "Examples:"
+    echo "  ship feat ENG-1234 \"add user authentication\""
+    echo "  ship fix ENG-5678 \"resolve login bug\""
+    echo "  ship docs ENG-9999 \"update API documentation\""
+    echo ""
+    echo "What this does:"
+    echo "  1. Creates branch: {type}/{ticket}"
+    echo "  2. Adds all changes: git add ."
+    echo "  3. Commits with message: git commit -m \"{message}\""
+    echo "  4. Pushes to origin: git push -u origin {branch}"
+}
+
+# Check for help flag
+if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
+    show_help
+    exit 0
+fi
+
 # Check if we have the right number of arguments
 if [[ $# -ne 3 ]]; then
-    echo "Usage: ship {conventional commit type} {ticket} {message}"
-    echo "Example: ship feat ENG-1234 \"add user authentication\""
+    echo "Error: Expected 3 arguments, got $#"
     echo ""
-    echo "Conventional commit types: feat, fix, docs, style, refactor, test, chore, perf, ci, build"
+    show_help
     exit 1
 fi
 
