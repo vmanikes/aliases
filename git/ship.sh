@@ -55,8 +55,9 @@ show_help() {
     echo "What this does:"
     echo "  1. Creates branch: {type}/{ticket}"
     echo "  2. Adds all changes: git add ."
-    echo "  3. Commits with message: git commit -m \"{message}\""
+    echo "  3. Commits with conventional format: {type}({ticket}): {message}"
     echo "  4. Pushes to origin: git push -u origin {branch}"
+    echo "  5. Opens GitHub Pull Request (if gh/hub CLI available)"
 }
 
 # Check for help flag
@@ -87,10 +88,30 @@ git checkout -b "$BRANCH_NAME"
 print_info "Adding all changes..."
 git add .
 
-print_info "Committing with message: $MESSAGE"
-git commit -m "$MESSAGE"
+# Create conventional commit message with ticket as scope
+COMMIT_MESSAGE="${COMMIT_TYPE}(${TICKET}): ${MESSAGE}"
+
+print_info "Committing with message: $COMMIT_MESSAGE"
+git commit -m "$COMMIT_MESSAGE"
 
 print_info "Pushing to origin..."
 git push -u origin "$BRANCH_NAME"
+
+# Try to open GitHub PR
+print_info "Opening GitHub Pull Request..."
+if command -v gh &> /dev/null; then
+    # GitHub CLI is available
+    gh pr create --title "$COMMIT_MESSAGE" --body "Automated PR created by ship command" --draft
+    print_success "Draft PR created! You can edit it on GitHub."
+elif command -v hub &> /dev/null; then
+    # Hub is available
+    hub pull-request -m "$COMMIT_MESSAGE" -d
+    print_success "Draft PR created! You can edit it on GitHub."
+else
+    # No GitHub tools available, show manual instructions
+    print_info "GitHub CLI (gh) or Hub not found."
+    print_info "To create a PR manually, visit:"
+    echo "  https://github.com/$(git remote get-url origin | sed 's/.*github.com[:/]\(.*\)\.git/\1/')/compare/$BRANCH_NAME"
+fi
 
 print_success "Successfully shipped! Branch: $BRANCH_NAME"
